@@ -41,9 +41,9 @@ def welcome():
         f"/api/v1.0/Start_Date/End_Date (YYYY-MM-DD)"
     )
 
+# Return the JSON representation of your dictionary.
 @app.route("/api/v1.0/precipitation")
 def precipitation():
-    
     
     # Create our session (link) from Python to the DB
     session = Session(engine)
@@ -58,7 +58,7 @@ def precipitation():
 
     return jsonify(dateprcp_dict)
 
-
+# Return a JSON list of stations from the dataset.
 @app.route("/api/v1.0/stations")
 def stations():
     
@@ -74,14 +74,14 @@ def stations():
 
     return jsonify(all_names)
 
-
+# Return a JSON list of temperature observations for the previous year.
 @app.route("/api/v1.0/tobs")
 def tobs():
     
     # Create our session (link) from Python to the DB
     session = Session(engine)
 
-    # Query all station data
+    # Query Measurement data
     temp_obs = session.query(Measurement.date,Measurement.tobs).\
             filter(Measurement.station == 'USC00519281').\
             filter(Measurement.date >= date1year).all()
@@ -91,7 +91,7 @@ def tobs():
     temp_obs_dict = {row[0]:row[1] for row in temp_obs}
     return jsonify(temp_obs_dict)
 
-
+# Returns the min, max, and average temperatures calculated from the given start date to the end of the dataset
 @app.route("/api/v1.0/<start>")
 def startdate(start):
     try:
@@ -115,15 +115,15 @@ def startdate(start):
             temp_obs_dict = {"min":temp_obs_list[0],
                              "avg":temp_obs_list[1],
                              "max":temp_obs_list[2]}
-
             return jsonify(temp_obs_dict)
     
     except:
         return jsonify({"error": f"The start date {start} not found, or incorrect formate."}), 404
 
-
+# Returns the min, max, and average temperatures calculated from the given start date to the given end date (6 points)
 @app.route("/api/v1.0/<start>/<end>")
 def startenddate(start,end):
+    # use try & except to catch the error
     try:
         inputstartdate = pd.to_datetime(start,format='%Y-%m-%d').date()
         inputenddate = pd.to_datetime(end,format='%Y-%m-%d').date()
@@ -147,7 +147,7 @@ def startenddate(start,end):
                     filter(Measurement.date <= inputenddate).all()
 
             session.close()
-
+            # Turn results into a normal list
             temp_obs_list = list(np.ravel(temp_obs))
             
             temp_obs_dict = {"min":temp_obs_list[0],
