@@ -8,7 +8,7 @@ import datetime as dt
 from flask import Flask, jsonify
 
 # Database Setup
-engine = create_engine("sqlite:///Resources/hawaii.sqlite")
+engine = create_engine("sqlite:///../Resources/hawaii.sqlite")
 
 # reflect an existing database into a new model
 Base = automap_base()
@@ -37,8 +37,8 @@ def welcome():
         f"/api/v1.0/precipitation<br/>"
         f"/api/v1.0/stations<br/>"
         f"/api/v1.0/tobs<br/>"
-        f"/api/v1.0/<start><br/>"
-        f"/api/v1.0/<start>/<end>"
+        f"/api/v1.0/Start_Date (YYYY-MM-DD)<br/>"
+        f"/api/v1.0/Start_Date/End_Date (YYYY-MM-DD)"
     )
 
 @app.route("/api/v1.0/precipitation")
@@ -54,7 +54,7 @@ def precipitation():
     session.close()
 
     # Convert list of tuples into dictionary
-    dateprcp_dict = [{row[0]:row[1]} for row in result_prcp]
+    dateprcp_dict = {row[0]:row[1] for row in result_prcp}
 
     return jsonify(dateprcp_dict)
 
@@ -88,8 +88,7 @@ def tobs():
 
     session.close()
 
-    temp_obs_dict = [{row[0]:row[1]} for row in temp_obs]
-
+    temp_obs_dict = {row[0]:row[1] for row in temp_obs}
     return jsonify(temp_obs_dict)
 
 
@@ -113,15 +112,14 @@ def startdate(start):
 
             temp_obs_list = list(np.ravel(temp_obs))
             
-            temp_obs_dict = {"start date":inputstartdate,
-                             "min":temp_obs_list[0],
+            temp_obs_dict = {"min":temp_obs_list[0],
                              "avg":temp_obs_list[1],
                              "max":temp_obs_list[2]}
 
             return jsonify(temp_obs_dict)
     
     except:
-        return jsonify({"error": f"The start date {start} not found."}), 404
+        return jsonify({"error": f"The start date {start} not found, or incorrect formate."}), 404
 
 
 @app.route("/api/v1.0/<start>/<end>")
@@ -152,16 +150,14 @@ def startenddate(start,end):
 
             temp_obs_list = list(np.ravel(temp_obs))
             
-            temp_obs_dict = {"start date":inputstartdate,
-                             "end date":inputenddate,
-                             "min":temp_obs_list[0],
+            temp_obs_dict = {"min":temp_obs_list[0],
                              "avg":temp_obs_list[1],
                              "max":temp_obs_list[2]}
 
             return jsonify(temp_obs_dict)
     
     except:
-        return jsonify({"error": f"The start date {start} not found."}), 404
+        return jsonify({"error": f"The start date {start} not found, or incorrect formate."}), 404
 
 if __name__ == '__main__':
     app.run(debug=True)
